@@ -18,7 +18,8 @@ protected:
 	void keyPressEvent(QKeyEvent *);
 
 
-
+protected:
+	void visualisationC1();
 
 protected:
 	bool myInRange(int low, int high, int x);
@@ -27,6 +28,7 @@ private:
 	Ui::testQTClass ui;
 	private slots:
     void testClick();
+
 
 /*protected:
 	void keyPressEvent(QKeyEvent *event) @override

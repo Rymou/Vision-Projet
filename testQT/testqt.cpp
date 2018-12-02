@@ -25,14 +25,18 @@ bool beginTraitement = false;
 cv::Point cercle2, cercle1;
 Vec3b intensity1;
 Vec3b intensity2;
-int h1, h2, s1, s2, v1, v2, lastX1,lastX2,lastY1,lastY2, r1, r2, g1, g2, b1, b2;
+int h1, h2, s1, s2, v1, v2, lastX1,lastX2,lastY1,lastY2, r1, r2, g1, g2, b1, b2,r,g,b;
+cv::Mat res;
+cv::Mat res2;
+bool drawing = false, gomme = false;
+
 
 testQT::testQT(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
 	connect(ui.b1, SIGNAL(clicked()), this, SLOT(testClick()));
-	//connect(ui.b1, SIGNAL(clicked(), this, SLOT())
+	//connect(ui.pushButton, SIGNAL(clicked()), this, SLOT(visualisationC1()));
 }
 
 testQT::~testQT()
@@ -45,10 +49,13 @@ void testQT::keyPressEvent(QKeyEvent *event)
 {
 	if (event->key() == Qt::Key_R)
 	{
+
 		beginTraitement = true;
+		drawing = true;
+		gomme = false;
 		Mat mask, hsv_image;
 		//ui.label_res->settext("you pressed r");
-		std::cout << " you pressed r, and the captured image has been saved " << std::endl;
+		//std::cout << " you pressed r, and the captured image has been saved " << std::endl;
 		//frame = frame2.clone();
 		
 		//ui.label_res->setPixmap(QPixmap::fromImage(QImage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888)));
@@ -60,6 +67,9 @@ void testQT::keyPressEvent(QKeyEvent *event)
 		g2 = frameFiltered.at<Vec3b>(Point(300, 200)).val[0];
 		b1 = frameFiltered.at<Vec3b>(Point(300, 200)).val[1];
 		b2 = frameFiltered.at<Vec3b>(Point(300, 200)).val[2];
+		r = ceil((r1 + r2) / 2);
+		g = ceil((g1 + g2) / 2);
+		b = ceil((b1 + b2) / 2);
 
 
 		//frameFiltered = filtreMedianNVG(frame2, 3);
@@ -69,7 +79,7 @@ void testQT::keyPressEvent(QKeyEvent *event)
 
 		circle(frameFiltered, Point(300, 50), 20, frameFiltered.at<Vec3b>(Point(300, 200)), -1);
 		circle(frameFiltered, Point(400, 50), 20, frameFiltered.at<Vec3b>(Point(400, 200)), -1);
-		imshow("filtered", frameFiltered);
+		//imshow("filtered", frameFiltered);
 
 		//ui.label_res->setPixmap(QPixmap::fromImage(QImage(frameFiltered.data, frameFiltered.cols, frameFiltered.rows, frameFiltered.step, QImage::Format_RGB888)));
 
@@ -86,9 +96,16 @@ void testQT::keyPressEvent(QKeyEvent *event)
 		//string ka = std::to_string(blue1) + " " + std::to_string(green1) + " " + std::to_string(red1) + "   :::  " + std::to_string(blue2) + " " + std::to_string(green2) + " " + std::to_string(red2);
 		//QString qstr = QString::fromStdString(ka);
 
-
-
 	}
+
+	else
+		if (event->key() == Qt::Key_H)
+		{
+
+			beginTraitement = true;
+			drawing = false;
+			gomme = true;
+		}
 }
 
 
@@ -101,13 +118,13 @@ bool myInRange(int low,int  high, int x)
 void testQT::testClick()  {
 	int iter = 0;
 
-	Mat roi = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\pn.jpg");
+	Mat roi = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\pencil.jpg");
+	Mat roi2 = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\eraser.jpg");
 
 	VideoCapture cap;
-	Mat ka = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\image_blanche.jpg");
 	//dessin = Mat::zeros(ka.size(), CV_8UC3);
 	Mat dessin = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\image_blanche.jpg");
-	cv::resize(dessin, dessin, cv::Size(521, 471));
+	cv::resize(dessin, dessin, cv::Size(541, 471));    
 	//ui.label_res->setPixmap(QPixmap::fromImage(QImage(dessin.data, dessin.cols, dessin.rows, dessin.step, QImage::Format_RGB888)));
 	cercle1 = Point(300, 200);
 	cercle2 = Point(400, 200);
@@ -128,7 +145,6 @@ void testQT::testClick()  {
 		Mat img = frame2.clone();
 		
 		bool bSuccess = cap.read(frame2); // lire une nouvelle frame depuis la vidéo
-		
 
 		if (!bSuccess) //le cas d'un échec 
 		{
@@ -160,14 +176,16 @@ void testQT::testClick()  {
 		//frame2 = img.clone();
 
 
-		cv::resize(frame2, frame2, cv::Size(701, 461));
+		cv::resize(frame2, frame2, cv::Size(591, 481)); 
 		if (beginTraitement == false){
 			ui.camera->setPixmap(QPixmap::fromImage(QImage(frame2.data, frame2.cols, frame2.rows, frame2.step, QImage::Format_RGB888)));
 		}
 		//frame = frame2.clone();
 		//Début Traitement 
 		if (beginTraitement == true){
+			//cout << "Commencement ..." << endl;
 			//ui.label_res->setPixmap(QPixmap::fromImage(QImage(frame2.data, frame2.cols, frame2.rows, frame2.step, QImage::Format_RGB888)));
+			Mat dessintmp = dessin.clone();
 
 			iter++;
 			
@@ -192,8 +210,8 @@ void testQT::testClick()  {
 			
 				int iP1 = 0;
 				int iP2 = 0;
-				Mat res = Mat(imageRes.rows, imageRes.cols, CV_8UC1);
-				Mat res2 = Mat(imageRes.rows, imageRes.cols, CV_8UC1);
+				res = Mat(imageRes.rows, imageRes.cols, CV_8UC1);
+				res2 = Mat(imageRes.rows, imageRes.cols, CV_8UC1);
 
 				for (int i = 0; i < imageRes.rows; i++){
 					for (int j = 0; j < imageRes.cols; j++){
@@ -289,37 +307,44 @@ void testQT::testClick()  {
 
 
 
-				cout << "Distance = " << distance << "\n" << endl;
+				//cout << "Distance = " << distance << "\n" << endl;
 
 
-				if (distance <= 150.0){
+				if (distance <= 70.0){
 
 						//Rect WhereRec(0, 0, roi.cols, roi.rows);
-						//0roi.copyTo(dessin(Rect(px1, py1, roi.cols, roi.rows)));
 					//dessin = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\image_blanche.jpg");
+					if (drawing == true){
+						//cout << "Dessiner .. " << endl;
+						roi.copyTo(dessintmp(Rect(px1, py1, roi.cols, roi.rows)));
 
-					
+						line(dessin, Point(px1, py1), Point(lastX1, lastY1), Scalar(0,0,0), 2); //Dessiner la tragéctoire en bleu 
+						//line(img, Point(px1, py1), Point(px2, py2), Scalar(255, 0, 0), 2); //Dessiner la distance en bleu 
+						ui.label_res->setPixmap(QPixmap::fromImage(QImage(dessintmp.data, dessintmp.cols, dessintmp.rows, dessintmp.step, QImage::Format_RGB888)));
+					}
+						if (gomme == true){
+							cout << "bidayaaat al mim7aaat " << endl;
+							roi2.copyTo(dessintmp(Rect(px1, py1, roi2.cols, roi2.rows)));
+							line(dessin, Point(px1, py1), Point(lastX1, lastY1), Scalar(255, 255, 255), 2);
+							ui.label_res->setPixmap(QPixmap::fromImage(QImage(dessintmp.data, dessintmp.cols, dessintmp.rows, dessintmp.step, QImage::Format_RGB888)));
 
-						line(img, Point(px1, py1), Point(px2, py2), Scalar(255, 0, 0), 2); //Dessiner la tragéctoire en bleu 
-
-
-					//dessin = dessin + imgLine;
-						//Mat dessin = imread("C:\\Users\\USER\\Documents\\Master2\\Vision\\image_blanche.jpg");
-
+						}
 
 				}
-				if (iter % 2 == 0){
-					Rect WhereRec(px1, py1, roi.cols, roi.rows);
-					//roi.copyTo(dessin(WhereRec));
+				lastX1 = px1; lastX2 = px2;
+				lastY1 = py1; lastY2 = py2;
+				//if (px1 > 0 && px2 > 0 && px1 < 521 && px2 < 521 && py1 > 0 && py2 > 0 && py1 < 471 && py2 < 471){
+					
+					//roi.copyTo(dessintmp(Rect(px2, py2, roi.cols, roi.rows)));
+
+					//Rect WhereRec(px1, py1, roi.cols, roi.rows);
+					//roi.copyTo(dessintmp(WhereRec));
 					//Rect blanc(px1, py1, 0, 0);
 					//dessin(roi).setTo(blanc));
-					line(dessin, Point(px1, py1), Point(lastX1, lastY1), Scalar(r1, g1, b1), 2); //Dessiner la tragéctoire en bleu 
-					line(dessin, Point(px2, py2), Point(lastX2, lastY2), Scalar(r2, g2, b2), 2); //Dessiner la tragéctoire en bleu
-					ui.label_res->setPixmap(QPixmap::fromImage(QImage(dessin.data, dessin.cols, dessin.rows, dessin.step, QImage::Format_RGB888)));
-
-					lastX1 = px1; lastX2 = px2;
-					lastY1 = py1; lastY2 = py2;
-				}
+					
+					//line(dessin, Point(px2, py2), Point(lastX2, lastY2), Scalar(r2, g2, b2), 2); //Dessiner la tragéctoire en bleu
+					
+				//}
 				//else{
 					//line(dessin, Point(px1, py1), Point(px2, py2), Scalar(255, 0, 0), 2);		//Dessiner la distance en rouge
 
@@ -327,31 +352,16 @@ void testQT::testClick()  {
 
 					
 				//img = img + imgLines;
-
+				cv::resize(img, img, cv::Size(591, 481));
 				ui.camera->setPixmap(QPixmap::fromImage(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_RGB888)));
-
-
-
-				/*if (distance <= 30.0){
-					if (px1 != lastX1 && py1 != lastY1){
-						line(dessin, Point(px1, py1), Point(lastX1, lastY1), Scalar(0, 0, 255), 2);
-					}
-					if (px2 != lastX2 && py2 != lastY2){
-						line(dessin, Point(px2, py2), Point(lastX2, lastY2), Scalar(255, 0, 0), 2);
-					}
-
-					//dessin = dessin + imgLine;
-					ui.label_res->setPixmap(QPixmap::fromImage(QImage(dessin.data, dessin.cols, dessin.rows, dessin.step, QImage::Format_RGB888)));
-					lastX1 = px1; lastX2 = px2;
-					lastY1 = py1; lastY2 = py2;
-				}*/
 
 
 
 
 
 			}
-			cout << "something" << endl;
+			
+			//cout << "something" << endl;
 			if (waitKey(60) == 27) //
 			{
 				cout << "esc key is pressed by user" << endl;
